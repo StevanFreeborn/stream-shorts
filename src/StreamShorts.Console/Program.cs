@@ -1,6 +1,9 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Resources;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using FFMpegCore;
 using FFMpegCore.Enums;
@@ -11,6 +14,9 @@ using NAudio.Wave;
 using Whisper.net;
 using Whisper.net.Ggml;
 
+
+var stopwatch = new Stopwatch();
+stopwatch.Start();
 var resourceManager = new ResourceManager("StreamShorts.Console.Resources.Resources", typeof(Program).Assembly);
 
 Console.WriteLine(resourceManager.GetString("WelcomeMessage", CultureInfo.CurrentCulture));
@@ -79,6 +85,8 @@ using var whisperProcessor = whisperFactory.CreateBuilder()
   .WithLanguage("en")
   .Build();
 
+var completeTranscription = new StringBuilder();
+
 foreach (var (i, segment) in segments.Select((s, index) => (index, s)))
 {
   var durationOffset = TimeSpan.FromMilliseconds(i * segmentDuration.TotalMilliseconds);
@@ -91,9 +99,88 @@ foreach (var (i, segment) in segments.Select((s, index) => (index, s)))
     segmentTranscription.AppendLine(CultureInfo.CurrentCulture, $"[{startTime:hh\\:mm\\:ss} - {endTime:hh\\:mm\\:ss}] {result.Text}");
   }
 
-  await File.AppendAllTextAsync("transcription.txt", segmentTranscription.ToString());
+  completeTranscription.Append(segmentTranscription);
 }
 
 // Step 5: Send the transcription to LLM for analysis
+// TODO: Explore this prompt further...seems break
+// when transcription is long
+var prompt = $"""
+You are an expert in identifying engaging segments from YouTube live stream transcriptions that are suitable for creating short videos. You will be provided with a transcription of a YouTube live stream. Your task is to analyze the transcription and identify potential segments that would make compelling short videos.
+
+For each segment you identify, you should create an object with the following attributes:
+
+title: A concise and catchy title for the short video.
+description: A brief description of the short video's content.
+explanation: Explain why this segment would make a good short video (e.g., it's funny, informative, controversial, etc.).
+start_time: The timestamp in the format HH:MM:SS where the segment begins in the original live stream.
+end_time: The timestamp in the format HH:MM:SS where the segment ends in the original live stream.
+Your response must be a JSON array of these objects. The JSON array should be the only output. Do not include any introductory or explanatory text outside of the JSON array.
+
+Here is the transcription of the YouTube live stream:
+
+{completeTranscription}
+""";
+
+using var client = new HttpClient()
+{
+  Timeout = TimeSpan.FromMinutes(30)
+};
+using var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:11434/api/generate")
+{
+  Content = new StringContent(
+    JsonSerializer.Serialize(new
+    {
+      model = "llama3.1:latest",
+      prompt,
+      stream = false
+    }),
+    Encoding.UTF8,
+    "application/json"
+  )
+};
+var response = await client.SendAsync(request);
+var responseContent = await response.Content.ReadAsStringAsync();
+var responseJson = JsonSerializer.Deserialize<LLMResponse>(responseContent);
+var analysis = JsonSerializer.Deserialize<List<LLMAnalysis>>(responseJson?.Response ?? string.Empty);
+
+if (analysis is null)
+{
+  Console.WriteLine(resourceManager.GetString("LLMAnalysisFailed", CultureInfo.CurrentCulture));
+  return;
+}
+
+foreach (var result in analysis)
+{
+  var fileName = string.Concat(result.Title.Split(Path.GetInvalidFileNameChars()));
+  await FFMpeg.SubVideoAsync(
+    args[0],
+    $"{fileName}.mp4",
+    result.StartTime,
+    result.EndTime
+  );
+}
+
+
+stopwatch.Stop();
+Console.WriteLine(stopwatch.Elapsed.Minutes);
 
 // Step 6: Use analysis to generate a short video
+
+record LLMAnalysis(
+  [property: JsonPropertyName("title")]
+  string Title,
+  [property: JsonPropertyName("description")]
+  string Description,
+  [property: JsonPropertyName("explanation")]
+  string Explanation,
+  [property: JsonPropertyName("start_time")]
+  TimeSpan StartTime,
+  [property: JsonPropertyName("end_time")]
+  TimeSpan EndTime
+);
+
+record LLMResponse(
+  [property: JsonPropertyName("response")]
+  string Response
+);
