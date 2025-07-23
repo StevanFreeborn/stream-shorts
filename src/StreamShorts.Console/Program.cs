@@ -9,11 +9,16 @@ using FFMpegCore;
 using FFMpegCore.Enums;
 using FFMpegCore.Pipes;
 
+using Microsoft.Extensions.Configuration;
+
 using NAudio.Wave;
 
 using Whisper.net;
 using Whisper.net.Ggml;
 
+var config = new ConfigurationBuilder()
+  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+  .Build();
 
 var stopwatch = new Stopwatch();
 stopwatch.Start();
@@ -105,35 +110,73 @@ foreach (var (i, segment) in segments.Select((s, index) => (index, s)))
 // Step 5: Send the transcription to LLM for analysis
 // TODO: Explore this prompt further...seems break
 // when transcription is long
-var prompt = $"""
-You are an expert in identifying engaging segments from YouTube live stream transcriptions that are suitable for creating short videos. You will be provided with a transcription of a YouTube live stream. Your task is to analyze the transcription and identify potential segments that would make compelling short videos.
+var prompt = $$"""
+I need your help to transform my YouTube live stream transcript into engaging YouTube Shorts. Act as my content editor and pinpoint **all potential candidate segments** that are perfect for short-form video. I'm looking for clips that are:
 
-For each segment you identify, you should create an object with the following attributes:
+  * **Funny:** Moments that will make viewers laugh.
+  * **Informative:** Sections packed with valuable information or tips.
+  * **Insightful:** Portions offering unique perspectives or 'aha\!' moments.
 
-title: A concise and catchy title for the short video.
-description: A brief description of the short video's content.
-explanation: Explain why this segment would make a good short video (e.g., it's funny, informative, controversial, etc.).
-start_time: The timestamp in the format HH:MM:SS where the segment begins in the original live stream.
-end_time: The timestamp in the format HH:MM:SS where the segment ends in the original live stream.
-Your response must be a JSON array of these objects. The JSON array should be the only output. Do not include any introductory or explanatory text outside of the JSON array.
+For each suggested short, please provide:
 
-Here is the transcription of the YouTube live stream:
+  * The **start time** of the initial segment and the **end time** of the final segment. The duration of each short should be no longer than 3 minutes, but **aim for durations between 15 seconds and 60 seconds**. However, the short **must be as long as necessary to capture the complete thought or idea**, even if it means exceeding the target range or extending slightly to capture all necessary dialogue.
+  * A concise **title** that grabs attention.
+  * A brief **description** highlighting the short's content and its appeal.
+  * An **explanation** of why this particular segment is suitable for a YouTube Short, focusing on its potential for discoverability and engagement.
 
-{completeTranscription}
+Please format your response as a JSON array of objects with the following structure:
+
+```json
+{
+  ""title"": ""string"",
+  "start_time": "string",
+  "end_time": "string",
+  "description": "string",
+  "explanation": "string"
+}
+```
+
+Here is the transcript of my YouTube live stream:
+
+{{completeTranscription}}
 """;
+
+var apiKey = config["GeminiApiKey"];
+
+if (string.IsNullOrWhiteSpace(apiKey))
+{
+  throw new InvalidOperationException("GeminiApiKey is not configured in appsettings.json.");
+}
 
 using var client = new HttpClient()
 {
   Timeout = TimeSpan.FromMinutes(30)
 };
-using var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:11434/api/generate")
+
+var requestUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={apiKey}";
+using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
 {
   Content = new StringContent(
     JsonSerializer.Serialize(new
     {
-      model = "llama3.1:latest",
-      prompt,
-      stream = false
+      contents = new[]
+      {
+        new
+        {
+          role = "user",
+          parts = new[]
+          {
+            new
+            {
+              text = prompt
+            }
+          },
+        }
+      },
+      generationConfig = new
+      {
+        responseMimeType = "application/json",
+      }
     }),
     Encoding.UTF8,
     "application/json"
@@ -142,7 +185,13 @@ using var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:11
 var response = await client.SendAsync(request);
 var responseContent = await response.Content.ReadAsStringAsync();
 var responseJson = JsonSerializer.Deserialize<LLMResponse>(responseContent);
-var analysis = JsonSerializer.Deserialize<List<LLMAnalysis>>(responseJson?.Response ?? string.Empty);
+var candidatesText = responseJson?
+  .Candidates?
+  .FirstOrDefault()?
+  .Content
+  .Parts?.FirstOrDefault()?
+  .Text;
+var analysis = JsonSerializer.Deserialize<List<LLMAnalysis>>(candidatesText ?? string.Empty);
 
 if (analysis is null)
 {
@@ -181,6 +230,21 @@ record LLMAnalysis(
 );
 
 record LLMResponse(
-  [property: JsonPropertyName("response")]
-  string Response
+  [property: JsonPropertyName("candidates")]
+  Candidate[] Candidates
+);
+
+record Candidate(
+  [property: JsonPropertyName("content")]
+  Content Content
+);
+
+record Content(
+  [property: JsonPropertyName("parts")]
+  Part[] Parts
+);
+
+record Part(
+  [property: JsonPropertyName("text")]
+  string Text
 );
