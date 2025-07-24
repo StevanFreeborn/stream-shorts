@@ -25,4 +25,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StreamShorts.Library\StreamShorts.Library.csproj" />
+  </ItemGroup>
 </Project>
