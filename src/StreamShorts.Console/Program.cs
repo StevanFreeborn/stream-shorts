@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Resources;
 using System.Text;
 using System.Text.Json;
@@ -9,28 +8,47 @@ using FFMpegCore;
 using FFMpegCore.Enums;
 using FFMpegCore.Pipes;
 
-using Microsoft.Extensions.Configuration;
-
 using NAudio.Wave;
 
 using Whisper.net;
 using Whisper.net.Ggml;
 
-var config = new ConfigurationBuilder()
-  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-  .Build();
+Log.Logger = new LoggerConfiguration()
+  .WriteTo.File(
+    formatter: new CompactJsonFormatter(),
+    path: Path.Combine(AppContext.BaseDirectory, "logs", "log.jsonl"),
+    rollingInterval: RollingInterval.Day
+  )
+  .Enrich.FromLogContext()
+  .MinimumLevel.Verbose()
+  .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
+  .CreateLogger();
 
-var stopwatch = new Stopwatch();
-stopwatch.Start();
-var resourceManager = new ResourceManager("StreamShorts.Console.Resources.Resources", typeof(Program).Assembly);
-
-Console.WriteLine(resourceManager.GetString("WelcomeMessage", CultureInfo.CurrentCulture));
-
-// Step 1: Retrieve stream
-if (args.Length is 0)
+try
 {
-  Console.WriteLine(resourceManager.GetString("StreamNotProvided", CultureInfo.CurrentCulture));
-  return;
+  var appName = Assembly.GetExecutingAssembly().GetName().Name;
+  Log.Information("Starting {AppName}", appName);
+
+  await Host.CreateDefaultBuilder(args)
+    .ConfigureLogging(static l => l.ClearProviders())
+    .ConfigureServices(static (_, services) =>
+    {
+      services.AddSingleton(AnsiConsole.Console);
+      services.AddSingleton<IFileSystem, FileSystem>();
+    })
+    .BuildApp()
+    .RunAsync(args);
+
+  Log.Information("{AppName} has completed successfully.", appName);
+}
+catch (Exception ex)
+{
+  Log.Fatal(ex, "An unhandled exception occurred during execution.");
+  throw;
+}
+finally
+{
+  await Log.CloseAndFlushAsync();
 }
 
 using var mp3Stream = new MemoryStream();
@@ -43,12 +61,6 @@ var wasExtracted = await FFMpegArguments
     o => o.DisableChannel(Channel.Video).ForceFormat("mp3")
   )
   .ProcessAsynchronously();
-
-if (wasExtracted is false)
-{
-  Console.WriteLine(resourceManager.GetString("Mp3ExtractionFailed", CultureInfo.CurrentCulture));
-  return;
-}
 
 // Step 2: Convert MP3 stream to 16khz wave format
 mp3Stream.Position = 0;
@@ -141,8 +153,6 @@ Here is the transcript of my YouTube live stream:
 {{completeTranscription}}
 """;
 
-var apiKey = config["GeminiApiKey"];
-
 if (string.IsNullOrWhiteSpace(apiKey))
 {
   throw new InvalidOperationException("GeminiApiKey is not configured in appsettings.json.");
@@ -209,10 +219,6 @@ foreach (var result in analysis)
     result.EndTime
   );
 }
-
-
-stopwatch.Stop();
-Console.WriteLine(stopwatch.Elapsed.Minutes);
 
 // Step 6: Use analysis to generate a short video
 
