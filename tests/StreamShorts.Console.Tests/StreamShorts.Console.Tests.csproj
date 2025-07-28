@@ -3,11 +3,16 @@
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Spectre.Console.Testing" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
+
+  <Target Name="GenerateHtmlCoverageReport" AfterTargets="VSTest">
+    <Exec Command="reportgenerator -reports:$(OutputPath)/TestResults/coverage.cobertura.xml -targetdir:$(OutputPath)/TestResults/Html -reporttypes:Html_Dark" />
+  </Target>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\StreamShorts.Console\StreamShorts.Console.csproj" />
