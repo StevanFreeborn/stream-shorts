@@ -3,12 +3,14 @@ namespace StreamShorts.Console.Commands;
 internal class DefaultCommand(
   IFileSystem fileSystem,
   IAnsiConsole console,
-  IAudioExtractor audioExtractor
+  IAudioExtractor audioExtractor,
+  IAudioConverter audioConverter
 ) : AsyncCommand<DefaultCommand.Settings>
 {
   private readonly IFileSystem _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
   private readonly IAnsiConsole _console = console ?? throw new ArgumentNullException(nameof(console));
   private readonly IAudioExtractor _audioExtractor = audioExtractor ?? throw new ArgumentNullException(nameof(audioExtractor));
+  private readonly IAudioConverter _audioConverter = audioConverter ?? throw new ArgumentNullException(nameof(audioConverter));
 
   internal class Settings : CommandSettings
   {
@@ -60,6 +62,23 @@ internal class DefaultCommand(
     }
 
     _console.MarkupLine($"[blue]Audio extracted[/] [green]successfully![/]");
+
+    Stream? wavStream = null;
+
+    _console.Status()
+      .Spinner(Spinner.Known.Dots)
+      .Start("Converting audio...", ctx =>
+      {
+        wavStream = _audioConverter.ConvertMp3ToWav16(audioStream);
+      });
+
+    if (wavStream is null)
+    {
+      _console.MarkupLine("[red]Failed[/] to convert audio to WAV format.");
+      return 2;
+    }
+
+    _console.MarkupLine($"[blue]Audio converted[/] [green]successfully![/]");
 
     return 0;
   }

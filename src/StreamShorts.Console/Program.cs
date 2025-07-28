@@ -37,6 +37,7 @@ try
       services.AddSingleton(AnsiConsole.Console);
       services.AddSingleton<IFileSystem, FileSystem>();
       services.AddSingleton<IAudioExtractor, AudioExtractor>();
+      services.AddSingleton<IAudioConverter, AudioConverter>();
     })
     .BuildApp()
     .RunAsync(args);
@@ -52,25 +53,6 @@ finally
 {
   await Log.CloseAndFlushAsync();
 }
-
-// using var mp3Stream = new MemoryStream();
-// using var mp4Stream = new FileStream(args[0], FileMode.Open, FileAccess.Read);
-
-// var wasExtracted = await FFMpegArguments
-//   .FromPipeInput(new StreamPipeSource(mp4Stream))
-//   .OutputToPipe(
-//     new StreamPipeSink(mp3Stream),
-//     o => o.DisableChannel(Channel.Video).ForceFormat("mp3")
-//   )
-//   .ProcessAsynchronously();
-
-// // Step 2: Convert MP3 stream to 16khz wave format
-// mp3Stream.Position = 0;
-// using var reader = new Mp3FileReader(mp3Stream);
-// var outFormat = new WaveFormat(16000, reader.WaveFormat.Channels);
-// using var resampler = new MediaFoundationResampler(reader, outFormat);
-// using var waveStream = new MemoryStream();
-// WaveFileWriter.WriteWavFileToStream(waveStream, resampler);
 
 // // Step 3: Split the wave stream into 2 minute segments
 // waveStream.Position = 0;
