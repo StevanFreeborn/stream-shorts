@@ -37,6 +37,7 @@ public class AudioExtractorTests
   public async Task ExtractMp3FromMp4Async_WhenVideoIsNotSeekable_ItShouldThrow()
   {
     var mockStream = new Mock<Stream>();
+    mockStream.Setup(s => s.CanRead).Returns(true);
     mockStream.Setup(s => s.CanSeek).Returns(false);
 
     var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object);

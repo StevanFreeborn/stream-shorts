@@ -17,4 +17,10 @@
     <ProjectReference Include="..\..\src\StreamShorts.Library\StreamShorts.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data/Files/**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
