@@ -4,7 +4,7 @@ namespace StreamShorts.Library.Media.Audio;
 /// Extracts audio from video files.
 /// </summary>
 /// <inheritdoc/>
-public class AudioExtractor : IAudioExtractor
+public sealed class AudioExtractor : IAudioExtractor
 {
   private readonly IVideoService _videoService = new FFMpegService();
 

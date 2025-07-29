@@ -7,7 +7,7 @@ namespace StreamShorts.Library.Media;
 /// Represents a service for processing audio files using NAudio.
 /// </summary>
 /// <inheritdoc/>
-internal class NAudioService : IAudioService
+internal sealed class NAudioService : IAudioService
 {
   public Stream ConvertMp3ToWav16(Stream mp3)
   {

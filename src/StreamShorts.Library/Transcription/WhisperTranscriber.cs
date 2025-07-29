@@ -11,7 +11,7 @@ namespace StreamShorts.Library.Transcription;
 /// Represents a transcriber that uses Whisper for audio transcription.
 /// </summary>
 /// <inheritdoc/>
-public class WhisperTranscriber : ITranscriber
+public sealed class WhisperTranscriber : ITranscriber, IDisposable
 {
   private readonly IAudioService _audioService = new NAudioService();
   private WhisperProcessor? _whisperProcessor;
@@ -75,5 +75,11 @@ public class WhisperTranscriber : ITranscriber
     {
       yield return result;
     }
+  }
+
+  public void Dispose()
+  {
+    _whisperProcessor?.Dispose();
+    _whisperProcessor = null;
   }
 }

@@ -1,6 +1,6 @@
 namespace StreamShorts.Console.Hosting;
 
-internal class TypeResolver(IHost provider) : ITypeResolver, IDisposable
+internal sealed class TypeResolver(IHost provider) : ITypeResolver, IDisposable
 {
   private readonly IHost _host = provider ?? throw new ArgumentNullException(nameof(provider));
 

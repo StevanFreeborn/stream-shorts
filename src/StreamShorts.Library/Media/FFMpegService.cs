@@ -10,7 +10,7 @@ namespace StreamShorts.Library.Media;
 /// Represents a service for processing video files using FFMpeg.
 /// </summary>
 /// <inheritdoc/>
-internal class FFMpegService : IVideoService
+internal sealed class FFMpegService : IVideoService
 {
   public async Task<bool> ExtractAudioFromVideoAsync(Stream video, Stream audio)
   {

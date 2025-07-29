@@ -1,6 +1,6 @@
 namespace StreamShorts.Console.Commands;
 
-internal class DefaultCommand(
+internal sealed class DefaultCommand(
   IFileSystem fileSystem,
   IAnsiConsole console,
   IAudioExtractor audioExtractor,

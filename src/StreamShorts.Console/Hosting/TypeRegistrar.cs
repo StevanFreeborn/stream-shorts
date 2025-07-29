@@ -1,6 +1,6 @@
 namespace StreamShorts.Console.Hosting;
 
-internal class TypeRegistrar(IHostBuilder builder) : ITypeRegistrar
+internal sealed class TypeRegistrar(IHostBuilder builder) : ITypeRegistrar
 {
   private readonly IHostBuilder _builder = builder;
 
