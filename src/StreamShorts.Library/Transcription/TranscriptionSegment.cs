@@ -1,0 +1,13 @@
+namespace StreamShorts.Library.Transcription;
+
+/// <summary>
+/// Represents a segment of transcribed audio.
+/// </summary>
+/// <param name="StartTime">The start time of the segment.</param>
+/// <param name="EndTime">The end time of the segment.</param>
+/// <param name="Text">The transcribed text of the segment.</param>
+public record TranscriptionSegment(
+  TimeSpan StartTime,
+  TimeSpan EndTime,
+  string Text
+);

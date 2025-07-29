@@ -6,8 +6,11 @@ using FFMpegCore.Pipes;
 
 namespace StreamShorts.Library.Media;
 
-[ExcludeFromCodeCoverage]
-internal class FFMpegService : IFFMpegService
+/// <summary>
+/// Represents a service for processing video files using FFMpeg.
+/// </summary>
+/// <inheritdoc/>
+internal class FFMpegService : IVideoService
 {
   public async Task<bool> ExtractAudioFromVideoAsync(Stream video, Stream audio)
   {

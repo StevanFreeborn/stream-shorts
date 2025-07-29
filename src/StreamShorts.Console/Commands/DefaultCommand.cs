@@ -4,13 +4,13 @@ internal class DefaultCommand(
   IFileSystem fileSystem,
   IAnsiConsole console,
   IAudioExtractor audioExtractor,
-  IAudioConverter audioConverter
+  ITranscriber transcriber
 ) : AsyncCommand<DefaultCommand.Settings>
 {
   private readonly IFileSystem _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
   private readonly IAnsiConsole _console = console ?? throw new ArgumentNullException(nameof(console));
   private readonly IAudioExtractor _audioExtractor = audioExtractor ?? throw new ArgumentNullException(nameof(audioExtractor));
-  private readonly IAudioConverter _audioConverter = audioConverter ?? throw new ArgumentNullException(nameof(audioConverter));
+  private readonly ITranscriber _transcriber = transcriber ?? throw new ArgumentNullException(nameof(transcriber));
 
   internal class Settings : CommandSettings
   {
@@ -63,22 +63,21 @@ internal class DefaultCommand(
 
     _console.MarkupLine($"[blue]Audio extracted[/] [green]successfully![/]");
 
-    Stream? wavStream = null;
+    List<TranscriptionSegment> transcriptionSegments = [];
 
-    _console.Status()
+    await _console.Status()
       .Spinner(Spinner.Known.Dots)
-      .Start("Converting audio...", ctx =>
+      .StartAsync("Transcribing audio...", async ctx =>
       {
-        wavStream = _audioConverter.ConvertMp3ToWav16(audioStream);
+        await foreach (var segment in _transcriber.TranscribeAsync(audioStream))
+        {
+          transcriptionSegments.Add(segment);
+          var segmentTimeText = $"[{segment.StartTime:hh\\:mm\\:ss} - {segment.EndTime:hh\\:mm\\:ss}]";
+          ctx.Status($"Transcribed segment {segmentTimeText.EscapeMarkup()}");
+        }
       });
 
-    if (wavStream is null)
-    {
-      _console.MarkupLine("[red]Failed[/] to convert audio to WAV format.");
-      return 2;
-    }
-
-    _console.MarkupLine($"[blue]Audio converted[/] [green]successfully![/]");
+    _console.MarkupLine($"[blue]Transcription completed[/] [green]successfully![/]");
 
     return 0;
   }

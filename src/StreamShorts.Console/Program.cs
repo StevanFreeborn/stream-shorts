@@ -1,20 +1,4 @@
-﻿using System.Globalization;
-using System.Resources;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using FFMpegCore;
-using FFMpegCore.Enums;
-using FFMpegCore.Pipes;
-
-using NAudio.Wave;
-
-
-using Whisper.net;
-using Whisper.net.Ggml;
-
-Log.Logger = new LoggerConfiguration()
+﻿Log.Logger = new LoggerConfiguration()
   .WriteTo.File(
     formatter: new CompactJsonFormatter(),
     path: Path.Combine(AppContext.BaseDirectory, "logs", "log.jsonl"),
@@ -37,7 +21,7 @@ try
       services.AddSingleton(AnsiConsole.Console);
       services.AddSingleton<IFileSystem, FileSystem>();
       services.AddSingleton<IAudioExtractor, AudioExtractor>();
-      services.AddSingleton<IAudioConverter, AudioConverter>();
+      services.AddSingleton<ITranscriber, WhisperTranscriber>();
     })
     .BuildApp()
     .RunAsync(args);

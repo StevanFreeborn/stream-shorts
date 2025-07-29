@@ -6,12 +6,20 @@ namespace StreamShorts.Library.Tests.Unit.Media.Audio;
 
 public class AudioExtractorTests
 {
-  private readonly Mock<IFFMpegService> _mockFfmpegService = new();
+  private readonly Mock<IVideoService> _mockFfmpegService = new();
   private readonly AudioExtractor _sut;
 
   public AudioExtractorTests()
   {
     _sut = new(_mockFfmpegService.Object);
+  }
+
+  [Fact]
+  public void Constructor_WhenCalledWithNullFfmpegService_ItShouldThrow()
+  {
+    var action = () => new AudioExtractor(null!);
+
+    action.Should().Throw<ArgumentNullException>();
   }
 
   [Fact]
