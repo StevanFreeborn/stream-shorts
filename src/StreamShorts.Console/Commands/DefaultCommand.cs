@@ -52,7 +52,7 @@ internal class DefaultCommand(
       .Spinner(Spinner.Known.Dots)
       .StartAsync("Extracting audio...", async ctx =>
       {
-        audioStream = await _audioExtractor.ExtractMp3FromMp4Async(videoStream).ConfigureAwait(false);
+        audioStream = await _audioExtractor.ExtractMp3FromMp4Async(videoStream);
       });
 
     if (audioStream is null)
