@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="FFMpegCore" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="NAudio" />
     <PackageReference Include="Whisper.net.AllRuntimes" />
   </ItemGroup>

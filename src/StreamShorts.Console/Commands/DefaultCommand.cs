@@ -4,13 +4,15 @@ internal sealed class DefaultCommand(
   IFileSystem fileSystem,
   IAnsiConsole console,
   IAudioExtractor audioExtractor,
-  ITranscriber transcriber
+  ITranscriber transcriber,
+  ITranscriptAnalyzer transcriptAnalyzer
 ) : AsyncCommand<DefaultCommand.Settings>
 {
   private readonly IFileSystem _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
   private readonly IAnsiConsole _console = console ?? throw new ArgumentNullException(nameof(console));
   private readonly IAudioExtractor _audioExtractor = audioExtractor ?? throw new ArgumentNullException(nameof(audioExtractor));
   private readonly ITranscriber _transcriber = transcriber ?? throw new ArgumentNullException(nameof(transcriber));
+  private readonly ITranscriptAnalyzer _transcriptAnalyzer = transcriptAnalyzer ?? throw new ArgumentNullException(nameof(transcriptAnalyzer));
 
   internal class Settings : CommandSettings
   {
@@ -78,6 +80,15 @@ internal sealed class DefaultCommand(
       });
 
     _console.MarkupLine($"[blue]Transcription completed[/] [green]successfully![/]");
+
+    TranscriptAnalysis? analysis = null;
+
+    await _console.Status()
+      .Spinner(Spinner.Known.Dots)
+      .StartAsync("Analyzing transcript...", async ctx =>
+      {
+        analysis = await _transcriptAnalyzer.AnalyzeAsync(transcriptionSegments);
+      });
 
     return 0;
   }

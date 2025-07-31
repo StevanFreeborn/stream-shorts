@@ -17,3 +17,4 @@ global using StreamShorts.Console.Commands;
 global using StreamShorts.Console.Hosting;
 global using StreamShorts.Library.Media.Audio;
 global using StreamShorts.Library.Transcription;
+global using StreamShorts.Library.Analysis;
