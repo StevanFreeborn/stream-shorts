@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace StreamShorts.Library.Analysis;
 
+/// <summary>
+/// Represents a short clip derived from a transcript
+/// </summary>
 public record ShortClip(
   [property: JsonPropertyName("title")]
   string Title,

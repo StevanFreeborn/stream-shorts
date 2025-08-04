@@ -1,4 +1,3 @@
-
 namespace StreamShorts.Library.Media;
 
 /// <summary>

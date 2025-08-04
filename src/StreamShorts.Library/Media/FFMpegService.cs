@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 using FFMpegCore;
 using FFMpegCore.Enums;
 using FFMpegCore.Pipes;
