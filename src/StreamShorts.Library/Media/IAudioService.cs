@@ -18,7 +18,7 @@ internal interface IAudioService
   /// <summary>
   /// Gets the number of segments in a WAV stream based on the specified segment duration.
   /// </summary>
-  /// param name="wavStream">The input WAV stream.</param>
+  /// <param name="wavStream">The input WAV stream.</param>
   /// <param name="segmentDuration">The duration of each segment.</param>
   /// <returns>The number of segments.</returns>
   /// <exception cref="ArgumentNullException">Thrown when the WAV stream is null.</exception>
@@ -29,7 +29,7 @@ internal interface IAudioService
   /// <summary>
   /// Gets a segment of a WAV stream based on the specified segment number and duration.
   /// </summary>
-  /// param name="wavStream">The input WAV stream.</param>
+  /// <param name="wavStream">The input WAV stream.</param>
   /// <param name="segmentNumber">The segment number to retrieve.</param>
   /// <param name="segmentDuration">The duration of each segment.</param>
   /// <returns>The segment stream.</returns>

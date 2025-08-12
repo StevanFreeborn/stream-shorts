@@ -12,4 +12,14 @@ internal interface IVideoService
   /// <param name="audio">The output audio stream.</param>
   /// <returns>A task that represents the asynchronous operation. The task result indicates whether the extraction was successful.</returns>
   Task<bool> ExtractAudioFromVideoAsync(Stream video, Stream audio);
+
+  /// <summary>
+  /// Extracts a clip from a video stream.
+  /// </summary>
+  /// <param name="video">The input video stream.</param>
+  /// <param name="start">The start time of the clip.</param>
+  /// <param name="end">The end time of the clip.</param>
+  /// <param name="buffer">The duration of the buffer to include before the start time and after the end time.</param>
+  /// <returns>A task that represents the asynchronous operation. The task result contains the extracted clip as a stream.</returns>
+  Task<Stream> ExtractClipFromVideoAsync(Stream video, TimeSpan start, TimeSpan end, TimeSpan? buffer = null);
 }

@@ -63,7 +63,7 @@ public sealed class GeminiAnalyzer(
       .Parts?.FirstOrDefault()?
       .Text;
 
-    var clips = JsonSerializer.Deserialize<List<ShortClip>>(candidatesText ?? string.Empty);
+    var clips = JsonSerializer.Deserialize<List<ShortCandidate>>(candidatesText ?? string.Empty);
     return new TranscriptAnalysis(clips ?? []);
   }
 }

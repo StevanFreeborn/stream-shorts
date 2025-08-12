@@ -1,3 +1,8 @@
+using System.Globalization;
+using System.Text.Json;
+
+using StreamShorts.Library.Media.Video;
+
 namespace StreamShorts.Console.Commands;
 
 internal sealed class DefaultCommand(
@@ -5,14 +10,24 @@ internal sealed class DefaultCommand(
   IAnsiConsole console,
   IAudioExtractor audioExtractor,
   ITranscriber transcriber,
-  ITranscriptAnalyzer transcriptAnalyzer
+  ITranscriptAnalyzer transcriptAnalyzer,
+  IShortsCreator shortsCreator,
+  TimeProvider timeProvider
 ) : AsyncCommand<DefaultCommand.Settings>
 {
+  private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+  {
+    WriteIndented = true,
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+  };
   private readonly IFileSystem _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
   private readonly IAnsiConsole _console = console ?? throw new ArgumentNullException(nameof(console));
   private readonly IAudioExtractor _audioExtractor = audioExtractor ?? throw new ArgumentNullException(nameof(audioExtractor));
   private readonly ITranscriber _transcriber = transcriber ?? throw new ArgumentNullException(nameof(transcriber));
   private readonly ITranscriptAnalyzer _transcriptAnalyzer = transcriptAnalyzer ?? throw new ArgumentNullException(nameof(transcriptAnalyzer));
+  private readonly IShortsCreator _shortsCreator = shortsCreator ?? throw new ArgumentNullException(nameof(shortsCreator));
+  private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
   internal class Settings : CommandSettings
   {
@@ -60,7 +75,7 @@ internal sealed class DefaultCommand(
     if (audioStream is null)
     {
       _console.MarkupLine("[red]Failed[/] to extract audio from the stream.");
-      return 1;
+      return (int)ExitCode.FailedToExtractAudio;
     }
 
     _console.MarkupLine($"[blue]Audio extracted[/] [green]successfully![/]");
@@ -90,6 +105,50 @@ internal sealed class DefaultCommand(
         analysis = await _transcriptAnalyzer.AnalyzeAsync(transcriptionSegments);
       });
 
+    if (analysis is null)
+    {
+      _console.MarkupLine("[red]Failed[/] to analyze transcript.");
+      return (int)ExitCode.FailedToAnalyzeTranscript;
+    }
+
+    _console.MarkupLine($"[blue]Transcript analysis completed[/] [green]successfully![/]");
+
+    var now = _timeProvider.GetUtcNow();
+    var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
+    var outputDirectoryPath = _fileSystem.Path.Combine(
+      AppContext.BaseDirectory,
+      $"{now:yyyy_MM_dd}_{inputFileName}"
+    );
+
+    var outputDirectory = _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
+
+    await _fileSystem.File.WriteAllTextAsync(
+      _fileSystem.Path.Combine(outputDirectoryPath, "analysis.json"),
+      JsonSerializer.Serialize(analysis, _jsonSerializerOptions)
+    );
+
+    await _console.Status()
+      .Spinner(Spinner.Known.Dots)
+      .StartAsync("Creating shorts...", async ctx =>
+      {
+        await foreach (var clip in _shortsCreator.CreateShortsAsync(analysis, videoStream))
+        {
+          ctx.Status($"Creating short: {clip.Candidate.Title.EscapeMarkup()}");
+
+          var safeFileName = string.Concat(clip.Candidate.Title.Split(_fileSystem.Path.GetInvalidFileNameChars()));
+          var filePath = _fileSystem.Path.Combine(outputDirectoryPath, $"{safeFileName}.webm");
+          var fileStream = _fileSystem.File.OpenWrite(filePath);
+        }
+      });
+
+    _console.MarkupLine($"[blue]Shorts created[/] [green]successfully![/]");
+
     return 0;
+  }
+
+  internal enum ExitCode
+  {
+    FailedToExtractAudio,
+    FailedToAnalyzeTranscript,
   }
 }

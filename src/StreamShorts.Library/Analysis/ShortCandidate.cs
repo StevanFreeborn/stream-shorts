@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 namespace StreamShorts.Library.Analysis;
 
 /// <summary>
-/// Represents a short clip derived from a transcript
+/// Represents a short candidate derived from a transcript.
 /// </summary>
-public record ShortClip(
+public record ShortCandidate(
   [property: JsonPropertyName("title")]
   string Title,
   [property: JsonPropertyName("description")]
