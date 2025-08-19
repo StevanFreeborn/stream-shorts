@@ -1,9 +1,8 @@
-using System.Text.Json;
-
-using StreamShorts.Library.Media.Video;
-
 namespace StreamShorts.Console.Commands;
 
+/// <summary>
+/// The default command for processing video streams to create short clips.
+/// </summary>
 internal sealed class DefaultCommand(
   IFileSystem fileSystem,
   IAnsiConsole console,
@@ -28,8 +27,14 @@ internal sealed class DefaultCommand(
   private readonly IShortsCreator _shortsCreator = shortsCreator ?? throw new ArgumentNullException(nameof(shortsCreator));
   private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
+  /// <summary>
+  /// Represents the settings for the default command.
+  /// </summary>
   internal class Settings : CommandSettings
   {
+    /// <summary>
+    /// Gets or sets the path to the stream.
+    /// </summary>
     [CommandArgument(0, "[Stream]")]
     [Description("The path to the stream")]
     public string Stream { get; init; } = string.Empty;
@@ -103,7 +108,7 @@ internal sealed class DefaultCommand(
     );
 
     _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
-    
+
     await _fileSystem.File.WriteAllTextAsync(
       _fileSystem.Path.Combine(outputDirectoryPath, "transcription.txt"),
       string.Join(Environment.NewLine, transcriptionSegments)

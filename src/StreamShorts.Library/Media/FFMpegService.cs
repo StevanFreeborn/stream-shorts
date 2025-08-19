@@ -23,8 +23,8 @@ internal sealed class FFMpegService : IVideoService
   }
 
   public async Task CreateClipFromVideoAsync(
-    string sourcePath, 
-    string destinationPath, 
+    string sourcePath,
+    string destinationPath,
     TimeSpan startTime,
     TimeSpan endTime,
     TimeSpan? buffer = null
@@ -32,7 +32,7 @@ internal sealed class FFMpegService : IVideoService
   {
     var start = startTime - (buffer ?? TimeSpan.Zero);
     var end = endTime + (buffer ?? TimeSpan.Zero);
-    
+
     await FFMpeg.SubVideoAsync(sourcePath, destinationPath, start, end)
       .ConfigureAwait(false);
   }

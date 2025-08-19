@@ -16,10 +16,10 @@ public sealed class AudioExtractor : IAudioExtractor
   }
 
   /// <summary>
-  /// Initializes a new instance of the <see cref="AudioExtractor"/> class with a specified FFMpeg service.
+  /// Initializes a new instance of the <see cref="AudioExtractor"/> class with a specified <see cref="IVideoService"/>.
   /// </summary>
   /// <param name="videoService">The video service to use for audio extraction.</param>
-  /// <exception cref="ArgumentNullException">Thrown when the FFMpeg service is null.</exception>
+  /// <exception cref="ArgumentNullException">Thrown when the video service is null.</exception>
   internal AudioExtractor(IVideoService videoService)
   {
     _videoService = videoService ?? throw new ArgumentNullException(nameof(videoService), $"{nameof(videoService)} cannot be null");

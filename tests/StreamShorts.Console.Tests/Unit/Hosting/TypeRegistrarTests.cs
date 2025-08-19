@@ -1,6 +1,6 @@
 namespace StreamShorts.Console.Tests.Unit.Hosting;
 
-public class TypeRegistrarTests
+internal class TypeRegistrarTests
 {
   [Fact]
   public void Constructor_WhenCalled_ItShouldNotThrowShould()

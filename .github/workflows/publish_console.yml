@@ -5,6 +5,10 @@ on:
     paths:
       - src/StreamShorts.Console/**
       - src/StreamShorts.Console.Tests/**
+      - src/StreamShorts.Library/**
+      - src/StreamShorts.Library.Tests/**
+      - StreamShorts.sln
+      - Directory.Build.props
     branches:
       - main
 jobs:

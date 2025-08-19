@@ -1,5 +1,9 @@
 namespace StreamShorts.Console.Hosting;
 
+/// <summary>
+/// Provides type registration services for the dependency injection container.
+/// </summary>
+/// <inheritdoc/>
 internal sealed class TypeRegistrar(IHostBuilder builder) : ITypeRegistrar
 {
   private readonly IHostBuilder _builder = builder;

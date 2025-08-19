@@ -1,7 +1,9 @@
 global using System.ComponentModel;
 global using System.IO.Abstractions;
 global using System.Reflection;
+global using System.Text.Json;
 
+global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
@@ -18,4 +20,5 @@ global using StreamShorts.Console.Hosting;
 global using StreamShorts.Library.Analysis;
 global using StreamShorts.Library.Analysis.Gemini;
 global using StreamShorts.Library.Media.Audio;
+global using StreamShorts.Library.Media.Video;
 global using StreamShorts.Library.Transcription;

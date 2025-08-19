@@ -4,7 +4,7 @@ using StreamShorts.Library.Media;
 
 namespace StreamShorts.Library.Tests.Unit.Media.Audio;
 
-public class AudioExtractorTests
+internal class AudioExtractorTests
 {
   private readonly Mock<IVideoService> _mockFfmpegService = new();
   private readonly AudioExtractor _sut;

@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-using StreamShorts.Library.Media.Video;
-
-Log.Logger = new LoggerConfiguration()
+﻿Log.Logger = new LoggerConfiguration()
   .WriteTo.File(
     formatter: new CompactJsonFormatter(),
     path: Path.Combine(AppContext.BaseDirectory, "logs", "log.jsonl"),
@@ -42,7 +38,7 @@ try
         {
           throw new InvalidOperationException($"{keyOptionName} is not configured in appsettings.json.");
         }
-        
+
         var clientFactory = sp.GetRequiredService<IHttpClientFactory>();
 
         return new GeminiAnalyzer(clientFactory, key, model);

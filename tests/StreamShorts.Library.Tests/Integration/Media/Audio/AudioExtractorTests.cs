@@ -1,6 +1,6 @@
 namespace StreamShorts.Library.Tests.Integration.Media.Audio;
 
-public class AudioExtractorTests
+internal class AudioExtractorTests
 {
   private readonly AudioExtractor _sut = new();
 

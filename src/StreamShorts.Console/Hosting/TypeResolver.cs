@@ -1,5 +1,9 @@
 namespace StreamShorts.Console.Hosting;
 
+/// <summary>
+/// Provides type resolution services using the dependency injection container.
+/// </summary>
+/// <inheritdoc/>
 internal sealed class TypeResolver(IHost provider) : ITypeResolver, IDisposable
 {
   private readonly IHost _host = provider ?? throw new ArgumentNullException(nameof(provider));
