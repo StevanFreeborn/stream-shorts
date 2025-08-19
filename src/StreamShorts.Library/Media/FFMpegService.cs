@@ -1,4 +1,3 @@
-
 using FFMpegCore;
 using FFMpegCore.Enums;
 using FFMpegCore.Pipes;
@@ -23,19 +22,18 @@ internal sealed class FFMpegService : IVideoService
       .ConfigureAwait(false);
   }
 
-  public async Task<Stream> ExtractClipFromVideoAsync(Stream video, TimeSpan start, TimeSpan end, TimeSpan? buffer = null)
+  public async Task CreateClipFromVideoAsync(
+    string sourcePath, 
+    string destinationPath, 
+    TimeSpan startTime,
+    TimeSpan endTime,
+    TimeSpan? buffer = null
+  )
   {
-    var startTime = start - (buffer ?? TimeSpan.Zero);
-    var endTime = end + (buffer ?? TimeSpan.Zero);
-    var outputStream = new MemoryStream();
-
-    await FFMpegArguments
-      .FromPipeInput(new StreamPipeSource(video), o => o.Seek(startTime).EndSeek(endTime))
-      .OutputToPipe(new StreamPipeSink(outputStream), o => o.CopyChannel().ForceFormat("webm"))
-      .ProcessAsynchronously()
+    var start = startTime - (buffer ?? TimeSpan.Zero);
+    var end = endTime + (buffer ?? TimeSpan.Zero);
+    
+    await FFMpeg.SubVideoAsync(sourcePath, destinationPath, start, end)
       .ConfigureAwait(false);
-
-    outputStream.Position = 0;
-    return outputStream;
   }
 }

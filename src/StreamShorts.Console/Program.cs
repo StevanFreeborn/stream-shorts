@@ -20,6 +20,7 @@ try
 
   await Host.CreateDefaultBuilder(args)
     .ConfigureLogging(static l => l.ClearProviders())
+    .ConfigureHostConfiguration(static config => config.AddJsonFile("appsettings.json"))
     .ConfigureServices(static (_, services) =>
     {
       services.AddHttpClient();
@@ -30,9 +31,21 @@ try
       services.AddSingleton<ITranscriber, WhisperTranscriber>();
       services.AddSingleton<ITranscriptAnalyzer, GeminiAnalyzer>(sp =>
       {
+        const string modelOptionName = "Model";
+        const string keyOptionName = "ApiKey";
+        var config = sp.GetRequiredService<IConfiguration>();
+        var geminiSection = config.GetSection("Gemini");
+        var key = geminiSection[keyOptionName];
+        var model = geminiSection[modelOptionName];
+
+        if (string.IsNullOrWhiteSpace(key))
+        {
+          throw new InvalidOperationException($"{keyOptionName} is not configured in appsettings.json.");
+        }
+        
         var clientFactory = sp.GetRequiredService<IHttpClientFactory>();
 
-        return new GeminiAnalyzer(clientFactory, "");
+        return new GeminiAnalyzer(clientFactory, key, model);
       });
       services.AddSingleton<IShortsCreator, ShortsCreator>();
     })

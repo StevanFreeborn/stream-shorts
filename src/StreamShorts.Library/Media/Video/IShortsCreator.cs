@@ -8,13 +8,14 @@ namespace StreamShorts.Library.Media.Video;
 public interface IShortsCreator
 {
   /// <summary>
-  /// Creates video shorts from the provided transcript analysis and video stream.
+  /// Creates a video short from the specified source video file based on the provided candidate details.
   /// </summary>
-  /// <param name="analysis">The transcript analysis.</param>
-  /// <param name="video">The video stream.</param>
-  /// <param name="buffer">An optional buffer duration to include before the start time and after the end time of each short.</param>
-  /// <returns>An asynchronous enumerable of <see cref="ShortClip"/>.</returns>
-  /// <exception cref="ArgumentNullException">Thrown when <paramref name="analysis"/> is null.</exception>
-  /// <exception cref="ArgumentNullException">Thrown when <paramref name="video"/> is null.</exception>
-  public IAsyncEnumerable<ShortClip> CreateShortsAsync(TranscriptAnalysis analysis, Stream video, TimeSpan? buffer = null);
+  /// <param name="sourcePath">The path to the source video file.</param>
+  /// <param name="candidate">The details of the short candidate.</param>
+  /// <param name="destinationPath">The path where the created short will be saved.</param>
+  /// <param name="buffer">An optional buffer time to include before and after the short segment.</param>
+  /// <returns>A task that represents the asynchronous operation.</returns>
+  /// <exception cref="ArgumentNullException">Thrown when <paramref name="sourcePath"/> or <paramref name="destinationPath"/> is null or whitespace.</exception>
+  /// <exception cref="ArgumentNullException">Thrown when <paramref name="candidate"/> is null.</exception>
+  public Task CreateShortAsync(string sourcePath, ShortCandidate candidate, string destinationPath, TimeSpan? buffer = null);
 }

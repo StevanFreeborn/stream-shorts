@@ -12,61 +12,68 @@ namespace StreamShorts.Library.Analysis.Gemini;
 /// <inheritdoc/>
 public sealed class GeminiAnalyzer(
   IHttpClientFactory httpClientFactory,
-  string apiKey
-  ) : ITranscriptAnalyzer
+  string apiKey,
+  string? model = null
+) : ITranscriptAnalyzer
 {
-  private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+  private readonly IHttpClientFactory _httpClientFactory =
+    httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+
   private readonly string _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
+  private readonly string _model = model ?? "gemini-2.5-flash-lite";
   private readonly IAnalysisPrompt _prompt = new DefaultAnalysisPrompt();
 
   public GeminiAnalyzer(
     IHttpClientFactory httpClientFactory,
     string apiKey,
-    IAnalysisPrompt prompt
-  ) : this(httpClientFactory, apiKey)
+    IAnalysisPrompt prompt,
+    string? model = null
+  ) : this(httpClientFactory, apiKey, model)
   {
     _prompt = prompt ?? throw new ArgumentNullException(nameof(prompt));
   }
 
   public async Task<TranscriptAnalysis> AnalyzeAsync(IEnumerable<TranscriptionSegment> segments)
   {
-    using var client = _httpClientFactory.CreateClient();
-    client.Timeout = TimeSpan.FromMinutes(5);
-
-    var requestUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={_apiKey}";
-    var generateContentRequest = new GenerateContentRequest(
-      [
-        new Content(
-          Role: "user",
-          Parts:[ new Part(Text: _prompt.GetPrompt(segments)) ]
-        )
-      ],
-      new GenerationConfig(ResponseMimeType: "application/json")
-    );
-    using var requestContent = new StringContent(
-      JsonSerializer.Serialize(generateContentRequest),
-      Encoding.UTF8,
-      "application/json"
-    );
-    using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
+    try
     {
-      Content = requestContent
-    };
+      using var client = _httpClientFactory.CreateClient();
+      client.Timeout = TimeSpan.FromMinutes(5);
 
-    var response = await client.SendAsync(request).ConfigureAwait(false);
-    var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-    var responseJson = JsonSerializer.Deserialize<GenerateContentResponse>(responseContent);
-    var candidatesText = responseJson?
-      .Candidates?
-      .FirstOrDefault()?
-      .Content
-      .Parts?.FirstOrDefault()?
-      .Text;
+      var requestUrl =
+        $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
+      var generateContentRequest = new GenerateContentRequest(
+        [
+          new Content(
+            Role: "user",
+            Parts: [new Part(Text: _prompt.GetPrompt(segments))]
+          )
+        ],
+        new GenerationConfig(ResponseMimeType: "application/json")
+      );
+      using var requestContent = new StringContent(
+        JsonSerializer.Serialize(generateContentRequest),
+        Encoding.UTF8,
+        "application/json"
+      );
+      using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = requestContent };
 
-    var clips = JsonSerializer.Deserialize<List<ShortCandidate>>(candidatesText ?? string.Empty);
-    return new TranscriptAnalysis(clips ?? []);
+      var response = await client.SendAsync(request).ConfigureAwait(false);
+      var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+      var responseJson = JsonSerializer.Deserialize<GenerateContentResponse>(responseContent);
+      var candidatesText = responseJson?
+        .Candidates?
+        .FirstOrDefault()?
+        .Content
+        .Parts?.FirstOrDefault()?
+        .Text;
+
+      var clips = JsonSerializer.Deserialize<List<ShortCandidate>>(candidatesText ?? string.Empty);
+      return new TranscriptAnalysis(clips ?? []);
+    }
+    catch (Exception e)
+    {
+      throw new FailedTranscriptAnalysisException("Failed to analyze transcript segments using Gemini.", e);
+    }
   }
 }
-
-
-

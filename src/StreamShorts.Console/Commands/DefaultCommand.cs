@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 
 using StreamShorts.Library.Media.Video;
@@ -67,7 +66,7 @@ internal sealed class DefaultCommand(
 
     await _console.Status()
       .Spinner(Spinner.Known.Dots)
-      .StartAsync("Extracting audio...", async ctx =>
+      .StartAsync("Extracting audio...", async _ =>
       {
         audioStream = await _audioExtractor.ExtractMp3FromMp4Async(videoStream);
       });
@@ -96,11 +95,16 @@ internal sealed class DefaultCommand(
 
     _console.MarkupLine($"[blue]Transcription completed[/] [green]successfully![/]");
 
+    await _fileSystem.File.WriteAllTextAsync(
+      _fileSystem.Path.Combine(AppContext.BaseDirectory, "transcription.txt"),
+      string.Join(Environment.NewLine, transcriptionSegments)
+    );
+
     TranscriptAnalysis? analysis = null;
 
     await _console.Status()
       .Spinner(Spinner.Known.Dots)
-      .StartAsync("Analyzing transcript...", async ctx =>
+      .StartAsync("Analyzing transcript...", async _ =>
       {
         analysis = await _transcriptAnalyzer.AnalyzeAsync(transcriptionSegments);
       });
@@ -117,10 +121,10 @@ internal sealed class DefaultCommand(
     var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
     var outputDirectoryPath = _fileSystem.Path.Combine(
       AppContext.BaseDirectory,
-      $"{now:yyyy_MM_dd}_{inputFileName}"
+      $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}"
     );
 
-    var outputDirectory = _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
+    _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
 
     await _fileSystem.File.WriteAllTextAsync(
       _fileSystem.Path.Combine(outputDirectoryPath, "analysis.json"),
@@ -131,13 +135,12 @@ internal sealed class DefaultCommand(
       .Spinner(Spinner.Known.Dots)
       .StartAsync("Creating shorts...", async ctx =>
       {
-        await foreach (var clip in _shortsCreator.CreateShortsAsync(analysis, videoStream))
+        foreach (var candidate in analysis.Candidates)
         {
-          ctx.Status($"Creating short: {clip.Candidate.Title.EscapeMarkup()}");
-
-          var safeFileName = string.Concat(clip.Candidate.Title.Split(_fileSystem.Path.GetInvalidFileNameChars()));
-          var filePath = _fileSystem.Path.Combine(outputDirectoryPath, $"{safeFileName}.webm");
-          var fileStream = _fileSystem.File.OpenWrite(filePath);
+          ctx.Status($"Creating short: {candidate.Title.EscapeMarkup()}");
+          var safeFileName = string.Concat(candidate.Title.Split(_fileSystem.Path.GetInvalidFileNameChars()));
+          var candidatePath = _fileSystem.Path.Combine(outputDirectoryPath, $"{safeFileName}.mp4");
+          await _shortsCreator.CreateShortAsync(settings.Stream, candidate, candidatePath);
         }
       });
 
@@ -146,7 +149,7 @@ internal sealed class DefaultCommand(
     return 0;
   }
 
-  internal enum ExitCode
+  private enum ExitCode
   {
     FailedToExtractAudio,
     FailedToAnalyzeTranscript,

@@ -10,4 +10,10 @@ public sealed record TranscriptionSegment(
   TimeSpan StartTime,
   TimeSpan EndTime,
   string Text
-);
+)
+{
+  public override string ToString()
+  {
+    return $"[{StartTime:hh\\:mm\\:ss} - {EndTime:hh\\:mm\\:ss}]: {Text}";
+  }
+}

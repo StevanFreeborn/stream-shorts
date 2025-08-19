@@ -42,8 +42,9 @@ internal sealed class DefaultAnalysisPrompt : IAnalysisPrompt
   {0}
   ");
 
-  public string GetPrompt(IEnumerable<TranscriptionSegment> transcript)
+  public string GetPrompt(IEnumerable<TranscriptionSegment> segments)
   {
+    var transcript = string.Join(Environment.NewLine, segments);
     return string.Format(CultureInfo.InvariantCulture, Prompt, transcript);
   }
 }

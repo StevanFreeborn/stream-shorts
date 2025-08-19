@@ -11,6 +11,7 @@ public interface ITranscriptAnalyzer
   /// Analyzes the provided transcript segments and generates a transcript analysis result.
   /// </summary>
   /// <param name="segments">The transcript segments to analyze.</param>
-  /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="TranscriptAnalysis"/> containing the short clips derived from the transcript.</returns> 
+  /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="TranscriptAnalysis"/> containing the short clips derived from the transcript.</returns>
+  /// <exception cref="FailedTranscriptAnalysisException">Thrown when the analysis fails due to an error.</exception>
   Task<TranscriptAnalysis> AnalyzeAsync(IEnumerable<TranscriptionSegment> segments);
 }

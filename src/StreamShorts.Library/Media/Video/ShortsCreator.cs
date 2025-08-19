@@ -19,27 +19,24 @@ public class ShortsCreator : IShortsCreator
     _videoService = videoService ?? throw new ArgumentNullException(nameof(videoService), $"{nameof(videoService)} cannot be null");
   }
 
-  public async IAsyncEnumerable<ShortClip> CreateShortsAsync(TranscriptAnalysis analysis, Stream video, TimeSpan? buffer = null)
+  public async Task CreateShortAsync(string sourcePath, ShortCandidate candidate, string destinationPath, TimeSpan? buffer = null)
   {
-    if (analysis is null)
+    if (string.IsNullOrWhiteSpace(sourcePath))
     {
-      throw new ArgumentNullException(nameof(analysis), $"{nameof(analysis)} cannot be null");
+      throw new ArgumentNullException(nameof(sourcePath), $"{nameof(sourcePath)} cannot be null or whitespace");
     }
-
-    if (video is null)
+    
+    if (candidate is null)
     {
-      throw new ArgumentNullException(nameof(video), $"{nameof(video)} cannot be null");
+      throw new ArgumentNullException(nameof(candidate), $"{nameof(candidate)} cannot be null");
     }
-
-    foreach (var candidate in analysis.Candidates)
+    
+    if (string.IsNullOrWhiteSpace(destinationPath))
     {
-      var clip = await _videoService.ExtractClipFromVideoAsync(video, candidate.StartTime, candidate.EndTime, buffer)
-        .ConfigureAwait(false);
-
-      yield return new ShortClip(
-        candidate,
-        clip
-      );
+      throw new ArgumentNullException(nameof(destinationPath), $"{nameof(destinationPath)} cannot be null or whitespace");
     }
+    
+    await _videoService.CreateClipFromVideoAsync(sourcePath, destinationPath, candidate.StartTime, candidate.EndTime, buffer)
+      .ConfigureAwait(false);
   }
 }
