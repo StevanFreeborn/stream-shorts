@@ -88,15 +88,24 @@ internal sealed class DefaultCommand(
         await foreach (var segment in _transcriber.TranscribeAsync(audioStream))
         {
           transcriptionSegments.Add(segment);
-          var segmentTimeText = $"[{segment.StartTime:hh\\:mm\\:ss} - {segment.EndTime:hh\\:mm\\:ss}]";
+          var segmentTimeText = $@"[{segment.StartTime:hh\:mm\:ss} - {segment.EndTime:hh\:mm\:ss}]";
           ctx.Status($"Transcribed segment {segmentTimeText.EscapeMarkup()}");
         }
       });
 
     _console.MarkupLine($"[blue]Transcription completed[/] [green]successfully![/]");
 
+    var now = _timeProvider.GetUtcNow();
+    var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
+    var outputDirectoryPath = _fileSystem.Path.Combine(
+      AppContext.BaseDirectory,
+      $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}"
+    );
+
+    _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
+    
     await _fileSystem.File.WriteAllTextAsync(
-      _fileSystem.Path.Combine(AppContext.BaseDirectory, "transcription.txt"),
+      _fileSystem.Path.Combine(outputDirectoryPath, "transcription.txt"),
       string.Join(Environment.NewLine, transcriptionSegments)
     );
 
@@ -116,15 +125,6 @@ internal sealed class DefaultCommand(
     }
 
     _console.MarkupLine($"[blue]Transcript analysis completed[/] [green]successfully![/]");
-
-    var now = _timeProvider.GetUtcNow();
-    var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
-    var outputDirectoryPath = _fileSystem.Path.Combine(
-      AppContext.BaseDirectory,
-      $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}"
-    );
-
-    _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
 
     await _fileSystem.File.WriteAllTextAsync(
       _fileSystem.Path.Combine(outputDirectoryPath, "analysis.json"),
