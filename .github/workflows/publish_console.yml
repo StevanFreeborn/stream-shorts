@@ -65,7 +65,7 @@ jobs:
         with:
           dotnet-version: 9.x
       - name: Build
-        run: dotnet build src
+        run: dotnet build
       - name: Publish for mac-os
         run: dotnet publish src/StreamShorts.Console/StreamsShorts.Console.csproj -c Release -r osx-x64 -o dist/mac-os
       - name: Rename mac-os file
