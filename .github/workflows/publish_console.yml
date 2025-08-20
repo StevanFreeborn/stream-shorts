@@ -67,7 +67,7 @@ jobs:
       - name: Build
         run: dotnet build
       - name: Publish for mac-os
-        run: dotnet publish src/StreamShorts.Console/StreamsShorts.Console.csproj -c Release -r osx-x64 -o dist/mac-os
+        run: dotnet publish src/StreamShorts.Console/StreamShorts.Console.csproj -c Release -r osx-x64 -o dist/mac-os
       - name: Rename mac-os file
         run: mv dist/mac-os/StreamShorts.Console dist/mac-os/StreamShorts.Console_macos
       - name: Publish for linux-os
