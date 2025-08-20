@@ -69,15 +69,15 @@ jobs:
       - name: Publish for mac-os
         run: dotnet publish src/StreamShorts.Console/StreamShorts.Console.csproj -c Release -r osx-x64 -o dist/mac-os
       - name: Create zip for mac-os
-        run: zip -r dist/stream_shorts_osx_x64.zip dist/mac-os/*
+        run: (cd dist/mac-os/ && zip -r ../stream_shorts_osx_x64.zip .)
       - name: Publish for linux-os
         run: dotnet publish src/StreamShorts.Console/StreamShorts.Console.csproj -c Release -r linux-x64 -o dist/linux-os
       - name: Create zip for linux-os
-        run: zip -r dist/stream_shorts_linux_x64.zip dist/linux-os/*
+        run: (cd dist/linux-os/ && zip -r ../stream_shorts_linux_x64.zip .)
       - name: Publish for windows-os
         run: dotnet publish src/StreamShorts.Console/StreamShorts.Console.csproj -c Release -r win-x64 -o dist/windows-os
       - name: Create zip for windows-os
-        run: zip -r dist/stream_shorts_windows_x64.zip dist/windows-os/*
+        run: (cd dist/windows-os/ && zip -r ../stream_shorts_windows_x64.zip .)
       - name: Get project version
         uses: kzrnm/get-net-sdk-project-versions-action@v1
         id: get-version
