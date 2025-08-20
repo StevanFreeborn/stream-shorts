@@ -1,6 +1,6 @@
 namespace StreamShorts.Console.Tests.Unit.Hosting;
 
-internal class TypeResolverTests
+public class TypeResolverTests
 {
   [Fact]
   public void Constructor_WhenCalledWithNullHost_ItShouldThrowArgumentNullException()
