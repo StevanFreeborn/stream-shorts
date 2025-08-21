@@ -71,10 +71,7 @@ internal sealed class DefaultCommand(
 
     await _console.Status()
       .Spinner(Spinner.Known.Dots)
-      .StartAsync("Extracting audio...", async _ =>
-      {
-        audioStream = await _audioExtractor.ExtractMp3FromMp4Async(videoStream);
-      });
+      .StartAsync("Extracting audio...", async _ => audioStream = await _audioExtractor.ExtractMp3FromMp4Async(videoStream));
 
     if (audioStream is null)
     {
@@ -102,10 +99,8 @@ internal sealed class DefaultCommand(
 
     var now = _timeProvider.GetUtcNow();
     var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
-    var outputDirectoryPath = _fileSystem.Path.Combine(
-      AppContext.BaseDirectory,
-      $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}"
-    );
+    var outputDirectory = $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}";
+    var outputDirectoryPath = _fileSystem.Path.Combine(AppContext.BaseDirectory, outputDirectory);
 
     _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
 
@@ -118,10 +113,7 @@ internal sealed class DefaultCommand(
 
     await _console.Status()
       .Spinner(Spinner.Known.Dots)
-      .StartAsync("Analyzing transcript...", async _ =>
-      {
-        analysis = await _transcriptAnalyzer.AnalyzeAsync(transcriptionSegments);
-      });
+      .StartAsync("Analyzing transcript...", async _ => analysis = await _transcriptAnalyzer.AnalyzeAsync(transcriptionSegments));
 
     if (analysis is null)
     {
@@ -149,14 +141,21 @@ internal sealed class DefaultCommand(
         }
       });
 
-    _console.MarkupLine($"[blue]Shorts created[/] [green]successfully![/]");
+    var directoryUri = new Uri(outputDirectoryPath).AbsoluteUri;
+    var panel = new Panel($"[blue link={directoryUri}]{outputDirectory}[/]")
+    {
+      Header = new PanelHeader($"[blue]Shorts created[/] [green]successfully![/]")
+    };
 
-    return 0;
+    _console.Write(panel);
+
+    return (int)ExitCode.SuccessFullyProcessedStream;
   }
 
   private enum ExitCode
   {
     FailedToExtractAudio,
     FailedToAnalyzeTranscript,
+    SuccessFullyProcessedStream,
   }
 }
