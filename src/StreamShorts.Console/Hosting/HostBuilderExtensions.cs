@@ -18,9 +18,9 @@ internal static class HostBuilderExtensions
     app.Configure(static c =>
       c.SetExceptionHandler(static (ex, resolver) =>
       {
-        var console = resolver?.Resolve(typeof(IAnsiConsole)) as IAnsiConsole;
-        console?.MarkupLine($"[red]An error occurred while executing the command:[/]");
-        console?.WriteException(ex, ExceptionFormats.ShortenEverything);
+        var console = resolver?.Resolve(typeof(IAnsiConsole)) as IAnsiConsole ?? AnsiConsole.Console;
+        console.MarkupLine($"[red]An error occurred while executing the command:[/]");
+        console.WriteException(ex, ExceptionFormats.ShortenEverything);
       })
     );
 
