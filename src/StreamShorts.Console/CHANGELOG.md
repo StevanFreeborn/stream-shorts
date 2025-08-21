@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.1.0"></a>
+## [0.1.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.1.0) (2025-08-21)
+
+### Features
+
+* fallback to static AnsiConsole if exception occurs before registered in DI container ([d560909](https://www.github.com/StevanFreeborn/stream-shorts/commit/d560909f16f0a97b399f8139f94b6f2fe07cf033))
+
 <a name="0.0.0"></a>
 ## [0.0.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.0.0) (2025-08-20)
 
