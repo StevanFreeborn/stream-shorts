@@ -4,7 +4,7 @@
     <AssemblyTitle>StreamShorts.Console</AssemblyTitle>
     <Product>StreamShorts.Console</Product>
     <Description>A command-line interface for StreamShorts</Description>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>Stevan Freeborn</Authors>
     <OutputType>Exe</OutputType>
     <PublishSingleFile>true</PublishSingleFile>

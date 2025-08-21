@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.2.0"></a>
+## [0.2.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.2.0) (2025-08-21)
+
+### Features
+
+* display location of output with link inside panel ([57e95b2](https://www.github.com/StevanFreeborn/stream-shorts/commit/57e95b2ea19ea97019df70bd7a5414984faaa1c7))
+
 <a name="0.1.0"></a>
 ## [0.1.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.1.0) (2025-08-21)
 
