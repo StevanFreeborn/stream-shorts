@@ -25,7 +25,7 @@ try
       services.AddSingleton(TimeProvider.System);
       services.AddSingleton<IAudioExtractor, AudioExtractor>();
       services.AddSingleton<ITranscriber, WhisperTranscriber>();
-      services.AddSingleton<ITranscriptAnalyzer, GeminiAnalyzer>(sp =>
+      services.AddSingleton<ITranscriptAnalyzer, GeminiAnalyzer>(static sp =>
       {
         const string modelOptionName = "Model";
         const string keyOptionName = "ApiKey";
