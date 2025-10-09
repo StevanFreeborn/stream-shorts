@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.3.0"></a>
+## [0.3.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.3.0) (2025-10-09)
+
+### Features
+
+* add configurable output directory with validation ([8632f88](https://www.github.com/StevanFreeborn/stream-shorts/commit/8632f88817c78663c632156a490eb118b802fef6))
+
+### Bug Fixes
+
+* use file system abstraction in base directory method. thanks copilot 🤖 ([6ebec7c](https://www.github.com/StevanFreeborn/stream-shorts/commit/6ebec7c2859200fd6c4374a84786c21dfa143171))
+
 <a name="0.2.0"></a>
 ## [0.2.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.2.0) (2025-08-21)
 
