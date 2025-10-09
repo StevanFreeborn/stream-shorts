@@ -10,7 +10,9 @@ internal sealed class DefaultCommand(
   ITranscriber transcriber,
   ITranscriptAnalyzer transcriptAnalyzer,
   IShortsCreator shortsCreator,
-  TimeProvider timeProvider
+  TimeProvider timeProvider,
+  IConfiguration appConfig,
+  ILogger<DefaultCommand> logger
 ) : AsyncCommand<DefaultCommand.Settings>
 {
   private readonly JsonSerializerOptions _jsonSerializerOptions = new()
@@ -26,6 +28,8 @@ internal sealed class DefaultCommand(
   private readonly ITranscriptAnalyzer _transcriptAnalyzer = transcriptAnalyzer ?? throw new ArgumentNullException(nameof(transcriptAnalyzer));
   private readonly IShortsCreator _shortsCreator = shortsCreator ?? throw new ArgumentNullException(nameof(shortsCreator));
   private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+  private readonly IConfiguration _appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
+  private readonly ILogger<DefaultCommand> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
   /// <summary>
   /// Represents the settings for the default command.
@@ -99,8 +103,9 @@ internal sealed class DefaultCommand(
 
     var now = _timeProvider.GetUtcNow();
     var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
-    var outputDirectory = $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}";
-    var outputDirectoryPath = _fileSystem.Path.Combine(AppContext.BaseDirectory, outputDirectory);
+    var baseDirectory = ValidateAndGetBaseOutputDirectory();
+    var artifactsOutputDirectory = $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}";
+    var outputDirectoryPath = _fileSystem.Path.Combine(baseDirectory, artifactsOutputDirectory);
 
     _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
 
@@ -142,7 +147,7 @@ internal sealed class DefaultCommand(
       });
 
     var directoryUri = new Uri(outputDirectoryPath).AbsoluteUri;
-    var panel = new Panel($"[blue link={directoryUri}]{outputDirectory}[/]")
+    var panel = new Panel($"[blue link={directoryUri}]{artifactsOutputDirectory}[/]")
     {
       Header = new PanelHeader($"[blue]Shorts created[/] [green]successfully![/]")
     };
@@ -150,6 +155,39 @@ internal sealed class DefaultCommand(
     _console.Write(panel);
 
     return (int)ExitCode.SuccessFullyProcessedStream;
+  }
+
+  private string ValidateAndGetBaseOutputDirectory()
+  {
+    var baseDirectory = _appConfig.GetValue<string>("OutputDirectory");
+
+    if (string.IsNullOrWhiteSpace(baseDirectory))
+    {
+      return AppContext.BaseDirectory;
+    }
+
+    try
+    {
+      var fullPath = _fileSystem.Path.GetFullPath(baseDirectory);
+
+      if (_fileSystem.Directory.Exists(fullPath) is false)
+      {
+        _fileSystem.Directory.CreateDirectory(fullPath);
+      }
+
+      return fullPath;
+    }
+    catch (Exception ex) when (
+      ex is ArgumentException
+        or NotSupportedException
+        or PathTooLongException
+        or DirectoryNotFoundException
+        or UnauthorizedAccessException
+    )
+    {
+      _logger.LogWarning(ex, "The configured output directory '{BaseDirectory}' is invalid. Defaulting to application base directory.", baseDirectory);
+      return AppContext.BaseDirectory;
+    }
   }
 
   private enum ExitCode
