@@ -170,9 +170,9 @@ internal sealed class DefaultCommand(
     {
       var fullPath = _fileSystem.Path.GetFullPath(baseDirectory);
 
-      if (Directory.Exists(fullPath) is false)
+      if (_fileSystem.Directory.Exists(fullPath) is false)
       {
-        Directory.CreateDirectory(fullPath);
+        _fileSystem.Directory.CreateDirectory(fullPath);
       }
 
       return fullPath;
