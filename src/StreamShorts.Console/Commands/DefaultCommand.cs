@@ -53,7 +53,7 @@ internal sealed class DefaultCommand(
 
     if (_fileSystem.File.Exists(settings.Stream) is false)
     {
-      return ValidationResult.Error($"The specified stream file '{settings.Stream}' does not exist.");
+      return ValidationResult.Error($"The specified stream file '{settings.Stream.EscapeMarkup()}' does not exist.");
     }
 
     var fileExtension = _fileSystem.Path.GetExtension(settings.Stream).ToUpperInvariant();
