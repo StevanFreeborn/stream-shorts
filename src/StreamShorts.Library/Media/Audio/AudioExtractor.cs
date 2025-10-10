@@ -34,7 +34,7 @@ public sealed class AudioExtractor : IAudioExtractor
 
     if (IsVideoStreamUsable(video) is false)
     {
-      throw new ArgumentException("Stream must be non-null, readable, and seekable", nameof(video));
+      throw new ArgumentException("Stream must be readable and seekable", nameof(video));
     }
 
     if (audio is null)
@@ -44,7 +44,7 @@ public sealed class AudioExtractor : IAudioExtractor
 
     if (IsAudioStreamUsable(audio) is false)
     {
-      throw new ArgumentException("Stream must be non-null, writable, and seekable", nameof(audio));
+      throw new ArgumentException("Stream must be writable and seekable", nameof(audio));
     }
 
     var originalPosition = video.Position;

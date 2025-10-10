@@ -92,12 +92,6 @@ internal sealed class DefaultCommand(
       .Spinner(Spinner.Known.Dots)
       .StartAsync("Extracting audio...", async _ => await _audioExtractor.ExtractMp3FromMp4Async(videoStream, audioStream));
 
-    if (audioStream is null)
-    {
-      _console.MarkupLine("[red]Failed[/] to extract audio from the stream.");
-      return (int)ExitCode.FailedToExtractAudio;
-    }
-
     _console.MarkupLine($"[blue]Audio extracted[/] [green]successfully![/]");
 
     List<TranscriptionSegment> transcriptionSegments = [];
@@ -199,7 +193,6 @@ internal sealed class DefaultCommand(
 
   private enum ExitCode
   {
-    FailedToExtractAudio,
     FailedToAnalyzeTranscript,
     SuccessFullyProcessedStream,
   }
