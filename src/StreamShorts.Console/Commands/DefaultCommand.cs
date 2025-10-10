@@ -53,7 +53,7 @@ internal sealed class DefaultCommand(
 
     if (_fileSystem.File.Exists(settings.Stream) is false)
     {
-      return ValidationResult.Error($"The specified stream file '{settings.Stream}' does not exist.");
+      return ValidationResult.Error($"The specified stream file '{settings.Stream.EscapeMarkup()}' does not exist.");
     }
 
     var fileExtension = _fileSystem.Path.GetExtension(settings.Stream).ToUpperInvariant();
@@ -68,7 +68,7 @@ internal sealed class DefaultCommand(
 
   public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
   {
-    _console.MarkupLine($"[blue]Processing stream:[/] {settings.Stream}");
+    _console.MarkupLine($"[blue]Processing stream:[/] {settings.Stream.EscapeMarkup()}");
     var videoStream = _fileSystem.File.OpenRead(settings.Stream);
 
     Stream? audioStream = null;
@@ -147,7 +147,7 @@ internal sealed class DefaultCommand(
       });
 
     var directoryUri = new Uri(outputDirectoryPath).AbsoluteUri;
-    var panel = new Panel($"[blue link={directoryUri}]{artifactsOutputDirectory}[/]")
+    var panel = new Panel($"[blue link={directoryUri}]{artifactsOutputDirectory.EscapeMarkup()}[/]")
     {
       Header = new PanelHeader($"[blue]Shorts created[/] [green]successfully![/]")
     };
