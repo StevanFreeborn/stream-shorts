@@ -32,14 +32,9 @@ public sealed class AudioExtractor : IAudioExtractor
       throw new ArgumentNullException(nameof(video), "Video stream cannot be null");
     }
 
-    if (video.CanRead is false)
+    if (IsVideoStreamUsable(video) is false)
     {
-      throw new ArgumentException("Video stream must be readable", nameof(video));
-    }
-
-    if (video.CanSeek is false)
-    {
-      throw new ArgumentException("Video stream must be seekable", nameof(video));
+      throw new ArgumentException("Stream must be non-null, readable, and seekable", nameof(video));
     }
 
     if (audio is null)
@@ -47,9 +42,9 @@ public sealed class AudioExtractor : IAudioExtractor
       throw new ArgumentNullException(nameof(audio), "Audio stream cannot be null");
     }
 
-    if (audio.CanWrite is false)
+    if (IsAudioStreamUsable(audio) is false)
     {
-      throw new ArgumentException("Audio stream must be writable", nameof(audio));
+      throw new ArgumentException("Stream must be non-null, writable, and seekable", nameof(audio));
     }
 
     var originalPosition = video.Position;
@@ -74,5 +69,15 @@ public sealed class AudioExtractor : IAudioExtractor
     {
       video.Position = originalPosition;
     }
+  }
+
+  private static bool IsVideoStreamUsable(Stream stream)
+  {
+    return stream.CanRead && stream.CanSeek;
+  }
+
+  private static bool IsAudioStreamUsable(Stream stream)
+  {
+    return stream.CanWrite && stream.CanSeek;
   }
 }
