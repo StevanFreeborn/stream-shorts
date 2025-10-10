@@ -25,7 +25,7 @@ public sealed class AudioExtractor : IAudioExtractor
     _videoService = videoService ?? throw new ArgumentNullException(nameof(videoService), $"{nameof(videoService)} cannot be null");
   }
 
-  public async Task<Stream> ExtractMp3FromMp4Async(Stream video)
+  public async Task<Stream> ExtractMp3FromMp4Async(Stream video, Stream audio)
   {
     if (video is null)
     {
@@ -42,25 +42,29 @@ public sealed class AudioExtractor : IAudioExtractor
       throw new ArgumentException("Video stream must be seekable", nameof(video));
     }
 
+    if (audio is null)
+    {
+      throw new ArgumentNullException(nameof(audio), "Audio stream cannot be null");
+    }
+
+    if (audio.CanWrite is false)
+    {
+      throw new ArgumentException("Audio stream must be writable", nameof(audio));
+    }
+
     var originalPosition = video.Position;
 
     try
     {
-      var mp3Stream = new MemoryStream();
-      using var mp4Stream = new MemoryStream();
-
-      await video.CopyToAsync(mp4Stream).ConfigureAwait(false);
-      mp4Stream.Position = 0;
-
-      var wasExtracted = await _videoService.ExtractAudioFromVideoAsync(mp4Stream, mp3Stream).ConfigureAwait(false);
+      var wasExtracted = await _videoService.ExtractAudioFromVideoAsync(video, audio).ConfigureAwait(false);
 
       if (wasExtracted is false)
       {
         throw new FailedAudioExtractionException("Failed to extract audio from the video stream.");
       }
 
-      mp3Stream.Position = 0;
-      return mp3Stream;
+      audio.Position = 0;
+      return audio;
     }
     catch (Exception e) when (e is not FailedAudioExtractionException)
     {

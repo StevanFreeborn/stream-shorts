@@ -69,13 +69,28 @@ internal sealed class DefaultCommand(
   public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
   {
     _console.MarkupLine($"[blue]Processing stream:[/] {settings.Stream.EscapeMarkup()}");
-    var videoStream = _fileSystem.File.OpenRead(settings.Stream);
+    var videoStream = (FileStream)_fileSystem.File.OpenRead(settings.Stream);
 
-    Stream? audioStream = null;
+    var now = _timeProvider.GetUtcNow();
+    var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
+    var baseDirectory = ValidateAndGetBaseOutputDirectory();
+    var artifactsOutputDirectory = $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}";
+    var outputDirectoryPath = _fileSystem.Path.Combine(baseDirectory, artifactsOutputDirectory);
+
+    _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
+
+    using var audioStream = new FileStream(
+      _fileSystem.Path.Combine(outputDirectoryPath, "audio.mp3"),
+      FileMode.Create,
+      FileAccess.ReadWrite,
+      FileShare.ReadWrite,
+      4096,
+      FileOptions.Asynchronous
+    );
 
     await _console.Status()
       .Spinner(Spinner.Known.Dots)
-      .StartAsync("Extracting audio...", async _ => audioStream = await _audioExtractor.ExtractMp3FromMp4Async(videoStream));
+      .StartAsync("Extracting audio...", async _ => await _audioExtractor.ExtractMp3FromMp4Async(videoStream, audioStream));
 
     if (audioStream is null)
     {
@@ -100,14 +115,6 @@ internal sealed class DefaultCommand(
       });
 
     _console.MarkupLine($"[blue]Transcription completed[/] [green]successfully![/]");
-
-    var now = _timeProvider.GetUtcNow();
-    var inputFileName = _fileSystem.Path.GetFileNameWithoutExtension(settings.Stream);
-    var baseDirectory = ValidateAndGetBaseOutputDirectory();
-    var artifactsOutputDirectory = $"{now:yyyy_MM_dd_HH_mm_ss}_{inputFileName}";
-    var outputDirectoryPath = _fileSystem.Path.Combine(baseDirectory, artifactsOutputDirectory);
-
-    _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
 
     await _fileSystem.File.WriteAllTextAsync(
       _fileSystem.Path.Combine(outputDirectoryPath, "transcription.txt"),

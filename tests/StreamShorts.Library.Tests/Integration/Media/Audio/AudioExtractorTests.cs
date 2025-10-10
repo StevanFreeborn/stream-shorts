@@ -9,13 +9,15 @@ public class AudioExtractorTests
   {
     using var testVideo = TestData.GetTestVideo();
     using var extractedAudio = TestData.GetExtractedAudio();
+    using var audioStream = new MemoryStream();
 
-    var result = await _sut.ExtractMp3FromMp4Async(testVideo);
+    var result = await _sut.ExtractMp3FromMp4Async(testVideo, audioStream);
 
     var audioBytes = await ConvertStreamToBytesAsync(extractedAudio);
     var resultBytes = await ConvertStreamToBytesAsync(result);
 
     resultBytes.Should().Equal(audioBytes);
+    result.Should().BeSameAs(audioStream);
   }
 
   private static async Task<byte[]> ConvertStreamToBytesAsync(Stream stream)

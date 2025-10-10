@@ -25,7 +25,7 @@ public class AudioExtractorTests
   [Fact]
   public async Task ExtractMp3FromMp4Async_WhenVideoIsNull_ItShouldThrow()
   {
-    var action = async () => await _sut.ExtractMp3FromMp4Async(null!);
+    var action = async () => await _sut.ExtractMp3FromMp4Async(null!, new MemoryStream());
 
     await action.Should().ThrowAsync<ArgumentNullException>();
   }
@@ -36,7 +36,7 @@ public class AudioExtractorTests
     var mockStream = new Mock<Stream>();
     mockStream.Setup(s => s.CanRead).Returns(false);
 
-    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object);
+    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object, new MemoryStream());
 
     await action.Should().ThrowAsync<ArgumentException>();
   }
@@ -48,7 +48,7 @@ public class AudioExtractorTests
     mockStream.Setup(s => s.CanRead).Returns(true);
     mockStream.Setup(s => s.CanSeek).Returns(false);
 
-    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object);
+    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object, new MemoryStream());
 
     await action.Should().ThrowAsync<ArgumentException>();
   }
@@ -69,7 +69,7 @@ public class AudioExtractorTests
       )
       .ThrowsAsync(new Exception());
 
-    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object);
+    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object, new MemoryStream());
 
     await action.Should().ThrowAsync<FailedAudioExtractionException>();
   }
@@ -90,7 +90,7 @@ public class AudioExtractorTests
       )
       .ReturnsAsync(false);
 
-    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object);
+    var action = async () => await _sut.ExtractMp3FromMp4Async(mockStream.Object, new MemoryStream());
 
     await action.Should().ThrowAsync<FailedAudioExtractionException>();
   }
@@ -111,7 +111,7 @@ public class AudioExtractorTests
       )
       .ReturnsAsync(true);
 
-    var result = await _sut.ExtractMp3FromMp4Async(mockStream.Object);
+    var result = await _sut.ExtractMp3FromMp4Async(mockStream.Object, new MemoryStream());
 
     result.Should().BeAssignableTo<Stream>();
     result.Should().BeOfType<MemoryStream>();
@@ -137,7 +137,7 @@ public class AudioExtractorTests
       )
       .ReturnsAsync(true);
 
-    await _sut.ExtractMp3FromMp4Async(stream);
+    await _sut.ExtractMp3FromMp4Async(stream, new MemoryStream());
 
     stream.Position.Should().Be(positionToRead);
   }

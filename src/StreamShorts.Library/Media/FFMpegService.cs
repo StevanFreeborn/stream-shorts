@@ -12,14 +12,17 @@ internal sealed class FFMpegService : IVideoService
 {
   public async Task<bool> ExtractAudioFromVideoAsync(Stream video, Stream audio)
   {
-    return await FFMpegArguments
-      .FromPipeInput(new StreamPipeSource(video))
-      .OutputToPipe(
-        new StreamPipeSink(audio),
-        static o => o.DisableChannel(Channel.Video).ForceFormat("mp3")
-      )
-      .ProcessAsynchronously()
-      .ConfigureAwait(false);
+    var inputArguments = video is FileStream videoFileStream
+      ? FFMpegArguments.FromFileInput(videoFileStream.Name)
+      : FFMpegArguments.FromPipeInput(new StreamPipeSource(video));
+
+    Action<FFMpegArgumentOptions> arguments = static o => o.DisableChannel(Channel.Video).ForceFormat("mp3");
+
+    var processor = audio is FileStream audioFileStream
+      ? inputArguments.OutputToFile(audioFileStream.Name, addArguments: arguments)
+      : inputArguments.OutputToPipe(new StreamPipeSink(audio), addArguments: arguments);
+    
+    return await processor.ProcessAsynchronously().ConfigureAwait(false);
   }
 
   public async Task CreateClipFromVideoAsync(
