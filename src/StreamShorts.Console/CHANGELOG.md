@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.4.0"></a>
+## [0.4.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.4.0) (2025-10-10)
+
+### Features
+
+* enable processing of large video files over 2GB ([e611522](https://www.github.com/StevanFreeborn/stream-shorts/commit/e611522c7bc724807ea39bdb5e6005b2deb911be))
+
+### Bug Fixes
+
+* add validation that stream is seekable ([401f03e](https://www.github.com/StevanFreeborn/stream-shorts/commit/401f03e2f0149b0f9d68df5d62fc3d5cccd3dc9e))
+* fix error messages and remove unnecessary null check and use input file name for audio output name ([a34ffe5](https://www.github.com/StevanFreeborn/stream-shorts/commit/a34ffe575b9e16e24d0b3d15d117d96f11a17d59))
+
 <a name="0.3.0"></a>
 ## [0.3.0](https://www.github.com/StevanFreeborn/stream-shorts/releases/tag/v0.3.0) (2025-10-09)
 
