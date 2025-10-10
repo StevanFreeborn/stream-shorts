@@ -21,7 +21,7 @@ internal sealed class FFMpegService : IVideoService
     var processor = audio is FileStream audioFileStream
       ? inputArguments.OutputToFile(audioFileStream.Name, addArguments: arguments)
       : inputArguments.OutputToPipe(new StreamPipeSink(audio), addArguments: arguments);
-    
+
     return await processor.ProcessAsynchronously().ConfigureAwait(false);
   }
 

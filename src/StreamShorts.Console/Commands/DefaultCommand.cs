@@ -80,7 +80,7 @@ internal sealed class DefaultCommand(
     _fileSystem.Directory.CreateDirectory(outputDirectoryPath);
 
     using var audioStream = new FileStream(
-      _fileSystem.Path.Combine(outputDirectoryPath, "audio.mp3"),
+      _fileSystem.Path.Combine(outputDirectoryPath, $"{inputFileName}.mp3"),
       FileMode.Create,
       FileAccess.ReadWrite,
       FileShare.ReadWrite,
