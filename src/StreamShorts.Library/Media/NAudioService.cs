@@ -1,4 +1,3 @@
-
 using NAudio.Wave;
 
 namespace StreamShorts.Library.Media;

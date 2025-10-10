@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "coreclr",
+      "request": "launch",
+      "name": "Launch StreamShorts.Console",
+      "program": "${workspaceFolder}/src/StreamShorts.Console/bin/Debug/net9.0/win-x64/StreamShorts.Console.dll",
+      "args": [
+        "${input:filePath}"
+      ],
+      "cwd": "${workspaceFolder}/src/StreamShorts.Console",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "preLaunchTask": "build",
+      "justMyCode": false
+    }
+  ],
+  "inputs": [
+    {
+      "id": "filePath",
+      "type": "promptString",
+      "description": "Enter the path to the video file",
+      "default": ""
+    }
+  ]
+}
