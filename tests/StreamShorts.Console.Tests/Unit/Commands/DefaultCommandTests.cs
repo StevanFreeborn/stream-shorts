@@ -10,12 +10,10 @@ public class DefaultCommandTests
   [InlineData("file_with_underscores.mp4", "file_with_underscores.mp4")]
   [InlineData("file with spaces.mp4", "file with spaces.mp4")]
   [InlineData("[brackets].mp4", "[[brackets]].mp4")]
-  public void EscapeMarkup_ShouldProperlyEscapeSquareBrackets(string input, string expected)
+  public void EscapeMarkup_WhenCalledWithVariousInputs_ItShouldProperlyEscapeSquareBrackets(string input, string expected)
   {
-    // Act
     var result = input.EscapeMarkup();
 
-    // Assert
     result.Should().Be(expected);
   }
 }
